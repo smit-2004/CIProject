@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace Data_Access_Layer
 {
@@ -360,6 +361,55 @@ namespace Data_Access_Layer
             {
                 throw;
             }
+        }
+
+        public List<Missions> MissionClientList(SortestData data)
+        {
+
+            var query = _cIDbContext.Missions
+            .Where(m => !m.IsDeleted);
+
+            switch (data.SortestValue.ToLower())
+            {
+                case "newest":
+                    query = query.OrderByDescending(m => m.StartDate);
+                    break;
+                case "oldest":
+                    query = query.OrderBy(m => m.StartDate);
+                    break;
+                case "lowest available seats":
+                    query = query.OrderBy(m => m.TotalSheets);
+                    break;
+                case "highest available seats":
+                    query = query.OrderByDescending(m => m.TotalSheets);
+                    break;
+                case "my favourites":
+                    query = query.OrderByDescending(m => m.MissionFavouriteStatus);
+                    break;
+                case "registration deadline":
+                    query = query.OrderBy(m => m.EndDate);
+                    break;
+                default:
+                    query = query.OrderBy(m => m.Id);
+                    break;
+            }
+
+            return query.ToList();
+
+
+
+        //    List<Missions> clientSideMissionlist = new List<Missions>();
+        //    try
+        //    {
+        //        var sortMission = _cIDbContext.Missions.Where(m => m.Id == data.UserId && !m.IsDeleted)
+        //.OrderBy(m => data.SortestValue == "asc" ? m.SortingColumn : m.SortingColumn descending)
+        //.ToList();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //    return clientSideMissionlist;
         }
     }
 }

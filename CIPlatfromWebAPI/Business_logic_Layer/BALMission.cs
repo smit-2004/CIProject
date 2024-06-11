@@ -68,5 +68,9 @@ namespace Business_logic_Layer
         {
             return _dalMission.MissionApplicationApprove(id);
         }
+        public List<Missions> MissionClientList(SortestData data)
+        {
+            return _dalMission.MissionClientList(data);
+        }
     }
 }
