@@ -397,19 +397,6 @@ namespace Data_Access_Layer
             return query.ToList();
 
 
-
-        //    List<Missions> clientSideMissionlist = new List<Missions>();
-        //    try
-        //    {
-        //        var sortMission = _cIDbContext.Missions.Where(m => m.Id == data.UserId && !m.IsDeleted)
-        //.OrderBy(m => data.SortestValue == "asc" ? m.SortingColumn : m.SortingColumn descending)
-        //.ToList();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        throw;
-        //    }
-        //    return clientSideMissionlist;
         }
     }
 }
