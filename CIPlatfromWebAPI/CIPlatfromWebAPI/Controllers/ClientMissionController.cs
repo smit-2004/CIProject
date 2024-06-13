@@ -1,5 +1,6 @@
 ﻿using Business_logic_Layer;
 using Data_Access_Layer.Repository.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web_API.Controllers
@@ -56,6 +57,24 @@ namespace Web_API.Controllers
             try
             {
                 result.Data = _balMission.MissionClientList(data);
+                result.Result = ResponseStatus.Success;
+            }
+            catch (Exception ex)
+            {
+                result.Result = ResponseStatus.Error;
+                result.Message = ex.Message;
+            }
+            return result;
+        }
+
+        [HttpPost]
+        [Route("MissionDetailByMissionId")]
+        [Authorize]
+        public ResponseResult MissionDetailByMissionId(SortestData data)
+        {
+            try
+            {
+                result.Data = _balMission.MissionDetailByMissionId(data);
                 result.Result = ResponseStatus.Success;
             }
             catch (Exception ex)

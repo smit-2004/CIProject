@@ -72,5 +72,9 @@ namespace Business_logic_Layer
         {
             return _dalMission.MissionClientList(data);
         }
+        public Missions MissionDetailByMissionId(SortestData data)
+        {
+            return _dalMission.MissionDetailByMissionId(data);
+        }
     }
 }

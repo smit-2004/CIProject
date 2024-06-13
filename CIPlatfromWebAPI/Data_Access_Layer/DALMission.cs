@@ -366,37 +366,119 @@ namespace Data_Access_Layer
         public List<Missions> MissionClientList(SortestData data)
         {
 
-            var query = _cIDbContext.Missions
-            .Where(m => !m.IsDeleted);
+            //var query = _cIDbContext.Missions
+            //.Where(m => !m.IsDeleted);
 
-            switch (data.SortestValue.ToLower())
+            //switch (data.SortestValue.ToLower())
+            //{
+            //    case "newest":
+            //        query = query.OrderByDescending(m => m.StartDate);
+            //        break;
+            //    case "oldest":
+            //        query = query.OrderBy(m => m.StartDate);
+            //        break;
+            //    case "lowest available seats":
+            //        query = query.OrderBy(m => m.TotalSheets);
+            //        break;
+            //    case "highest available seats":
+            //        query = query.OrderByDescending(m => m.TotalSheets);
+            //        break;
+            //    case "my favourites":
+            //        query = query.OrderByDescending(m => m.MissionFavouriteStatus);
+            //        break;
+            //    case "registration deadline":
+            //        query = query.OrderBy(m => m.EndDate);
+            //        break;
+            //    default:
+            //        query = query.OrderBy(m => m.Id);
+            //        break;
+            //}
+
+            //return query.ToList();
+            List<Missions> missionClientList = new List<Missions>();
+            try
             {
-                case "newest":
-                    query = query.OrderByDescending(m => m.StartDate);
-                    break;
-                case "oldest":
-                    query = query.OrderBy(m => m.StartDate);
-                    break;
-                case "lowest available seats":
-                    query = query.OrderBy(m => m.TotalSheets);
-                    break;
-                case "highest available seats":
-                    query = query.OrderByDescending(m => m.TotalSheets);
-                    break;
-                case "my favourites":
-                    query = query.OrderByDescending(m => m.MissionFavouriteStatus);
-                    break;
-                case "registration deadline":
-                    query = query.OrderBy(m => m.EndDate);
-                    break;
-                default:
-                    query = query.OrderBy(m => m.Id);
-                    break;
+                var query = _cIDbContext.Missions
+                    .Where(m => !m.IsDeleted);
+
+                // Apply dynamic sorting based on SortestValue
+                switch (data.SortestValue)
+                {
+                    case "Newest":
+                        query = query.OrderByDescending(m => m.CreatedDate);
+                        break;
+                    case "Oldest":
+                        query = query.OrderBy(m => m.CreatedDate);
+                        break;
+                    case "Lowest":
+                        query = query.OrderBy(m => m.TotalSheets);
+                        break;
+                    case "Highest":
+                        query = query.OrderByDescending(m => m.TotalSheets);
+                        break;
+                    case "Registration":
+                        query = query.OrderByDescending(m => m.RegistrationDeadLine);
+                        break;
+                    default:
+                        query = query.OrderBy(m => m.Id); // Default sorting if no valid SortestValue is provided
+                        break;
+                }
+
+                missionClientList = query
+                    .Select(m => new Missions
+                    {
+                        Id = m.Id,
+                        MissionTitle = m.MissionTitle,
+                        MissionDescription = m.MissionDescription,
+                        MissionOrganisationDetail = m.MissionOrganisationDetail,
+                        MissionOrganisationName = m.MissionOrganisationName,
+                        CountryId = m.CountryId,
+                        CountryName = m.CountryName,
+                        CityId = m.CityId,
+                        CityName = m.CityName,
+                        StartDate = m.StartDate,
+                        EndDate = m.EndDate,
+                        MissionType = m.MissionType,
+                        TotalSheets = m.TotalSheets,
+                        RegistrationDeadLine = m.RegistrationDeadLine,
+                        MissionThemeId = m.MissionThemeId,
+                        MissionSkillId = m.MissionSkillId,
+                        MissionImages = m.MissionImages,
+                        MissionDocuments = m.MissionDocuments,
+                        MissionAvilability = m.MissionAvilability,
+                        MissionVideoUrl = m.MissionVideoUrl,
+                        MissionThemeName = m.MissionThemeName,
+                        MissionSkillName = string.Join(",", m.MissionSkillName),
+                        MissionStatus = m.RegistrationDeadLine < DateTime.Now.AddDays(-1) ? "Closed" : "Available",
+                        MissionApplyStatus = _cIDbContext.MissionApplication.Any(ma => ma.MissionId == m.Id && ma.UserId == data.UserId) ? "Applied" : "Apply",
+                        MissionApproveStatus = _cIDbContext.MissionApplication.Any(ma => ma.MissionId == m.Id && ma.UserId == data.UserId && ma.Status == true) ? "Approved" : "Applied",
+                        MissionDateStatus = m.EndDate <= DateTime.Now.AddDays(-1) ? "MissionEnd" : "MissionRunning",
+                        MissionDeadLineStatus = m.RegistrationDeadLine <= DateTime.Now.AddDays(-1) ? "Closed" : "Running",
+                        MissionFavouriteStatus = "0",
+                        Rating = 0,
+                    })
+                    .ToList();
             }
+            catch (Exception)
+            {
+                throw;
+            }
+            return missionClientList;
 
-            return query.ToList();
+        }
 
+        public Missions MissionDetailByMissionId(SortestData data)
+        {
+            Missions missionDetail = new Missions();
+            try
+            {
 
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return missionDetail;
         }
     }
 }
