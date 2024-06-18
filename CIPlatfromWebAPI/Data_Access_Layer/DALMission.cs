@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
+using System.Net.Mail;
+using System.Net;
 
 namespace Data_Access_Layer
 {
@@ -469,16 +471,137 @@ namespace Data_Access_Layer
 
         public Missions MissionDetailByMissionId(SortestData data)
         {
-            Missions missionDetail = new Missions();
             try
             {
+                var missionDetail = _cIDbContext.Missions
+                    .FirstOrDefault(m => m.Id == data.MissionId);
 
+                if (missionDetail != null)
+                {
+                    missionDetail.MissionSkillName = string.Join(",", missionDetail.MissionSkillName);
+                    missionDetail.MissionStatus = missionDetail.RegistrationDeadLine < DateTime.Now.AddDays(-1) ? "Closed" : "Available";
+                    missionDetail.MissionApplyStatus = _cIDbContext.MissionApplication
+                        .Any(ma => ma.MissionId == missionDetail.Id && ma.UserId == data.UserId) ? "Applied" : "Apply";
+                    missionDetail.MissionApproveStatus = _cIDbContext.MissionApplication
+                        .Any(ma => ma.MissionId == missionDetail.Id && ma.UserId == data.UserId && ma.Status == true) ? "Approved" : "Applied";
+                    missionDetail.MissionDateStatus = missionDetail.EndDate <= DateTime.Now.AddDays(-1) ? "MissionEnd" : "MissionRunning";
+                    missionDetail.MissionDeadLineStatus = missionDetail.RegistrationDeadLine <= DateTime.Now.AddDays(-1) ? "Closed" : "Running";
+                    missionDetail.MissionFavouriteStatus = "0";
+                    missionDetail.Rating = 0;
+                }
+
+                return missionDetail;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to fetch mission details.", ex);
+            }
+        }
+        public string AddMissionFavourite(MissionFavourites missionFavourites)
+        {
+            try
+            {
+                var newFavourite = new MissionFavourites
+                {
+                    MissionId = missionFavourites.MissionId,
+                    UserId = missionFavourites.UserId
+                };
+
+                _cIDbContext.MissionFavourites.Add(newFavourite);
+                _cIDbContext.SaveChanges();
+
+                return "Mission Added To favourites";
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public string RemoveMissionFavourite(MissionFavourites missionFavourites)
+        {
+            try
+            {
+                // Find the MissionFavourite record to remove
+                var favouriteToRemove = _cIDbContext.MissionFavourites
+                    .FirstOrDefault(f => f.MissionId == missionFavourites.MissionId && f.UserId == missionFavourites.UserId);
+
+                if (favouriteToRemove != null)
+                {
+                    // Remove the entity and save changes
+                    _cIDbContext.MissionFavourites.Remove(favouriteToRemove);
+                    _cIDbContext.SaveChanges();
+                }
+
+                return "Mission removed from Favourites";
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public string SendInviteMissionMail(List<MissionShareOrInvite> users)
+        {
+            string result = "";
+            try
+            {
+                foreach (var item in users)
+                {
+                    string callbackurl = item.baseUrl + "/volunteeringMission/" + item.MissionId;
+                    string mailTo = item.EmailAddress;
+                    string userName = item.UserFullName;
+                    string emailBody = "Hi " + userName + ",<br/><br/> Click the link below to suggest mission link <br/><br/> " + callbackurl;
+                    MailMessage mail = new MailMessage();
+                    SmtpClient SmtpServer = new SmtpClient();
+                    mail.From = new MailAddress(item.MissionShareUserEmailAddress);
+                    mail.To.Add(mailTo);
+                    mail.Subject = "Invite Mission Link";
+                    mail.Body = emailBody;
+                    mail.IsBodyHtml = true;
+                    SmtpServer.UseDefaultCredentials = false;
+                    NetworkCredential NetworkCred = new NetworkCredential(item.MissionShareUserEmailAddress, "passwordfromenv");
+                    SmtpServer.Credentials = NetworkCred;
+                    SmtpServer.EnableSsl = true;
+                    SmtpServer.Port = 587;
+                    SmtpServer.Host = "smtp.gmail.com";
+                    SmtpServer.Send(mail);
+                }
+                result = "Mission Invite Successfully";
             }
             catch (Exception)
             {
                 throw;
             }
-            return missionDetail;
+            return result;
+        }
+        public string AddMissionComment(MissionComment missionComment)
+        {
+            try
+            {
+                _cIDbContext.MissionComment.Add(missionComment);
+                _cIDbContext.SaveChanges();
+                return "Comment added successfully";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public List<MissionComment> MissionCommentListByMissionId(int missionId)
+        {
+            try
+            {
+                var missionCommentList = _cIDbContext.MissionComment
+                    .Where(mc => mc.MissionId == missionId)
+                    .ToList();
+                return missionCommentList;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

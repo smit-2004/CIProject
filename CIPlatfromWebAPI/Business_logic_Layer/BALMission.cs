@@ -76,5 +76,25 @@ namespace Business_logic_Layer
         {
             return _dalMission.MissionDetailByMissionId(data);
         }
+        public string AddMissionFavourite(MissionFavourites missionFavourites)
+        {
+            return _dalMission.AddMissionFavourite(missionFavourites);
+        }
+        public string RemoveMissionFavourite(MissionFavourites missionFavourites)
+        {
+            return _dalMission.RemoveMissionFavourite(missionFavourites);
+        }
+        public string SendInviteMissionMail(List<MissionShareOrInvite> user)
+        {
+            return _dalMission.SendInviteMissionMail(user);
+        }
+        public string AddMissionComment(MissionComment missionComment)
+        {
+            return _dalMission.AddMissionComment(missionComment);
+        }
+        public List<MissionComment> MissionCommentListByMissionId(int missionId)
+        {
+            return _dalMission.MissionCommentListByMissionId(missionId);
+        }
     }
 }
